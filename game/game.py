@@ -14,6 +14,8 @@ clock = pygame.time.Clock()
 def run():
     running = True
     car = Car(200, 100)
+    track_image = pygame.image.load("maps/map1.png").convert()
+    wall_mask = pygame.mask.from_threshold(track_image, (255, 127, 39), (5, 5, 5, 255))
 
     while running:
         for event in pygame.event.get():
@@ -33,31 +35,28 @@ def run():
             car.stop()
         car.move()
 
-        if check_collision(screen, car):
+        if check_collision(wall_mask, car):
             break
 
         checkpoint(screen, car)
 
         car.score -= 0.1
 
-        get_distance(car, 0)
-        get_distance(car, 45)
-        get_distance(car, -45)
+        get_distance(car, wall_mask, 0)
+        get_distance(car, wall_mask, 45)
+        get_distance(car, wall_mask, -45)
 
         car.display(screen)
+        screen.blit(track_image, (0, 0))
         pygame.display.flip()
         clock.tick(30)
 
     pygame.quit()
 
 
-def check_collision(scrn, car):
-    track_image = pygame.image.load("maps/map1.png").convert()
-    wall_mask = pygame.mask.from_threshold(track_image, (255, 127, 39), (5, 5, 5, 255))
+def check_collision(wall_mask, car):
     rotated_image = pygame.transform.rotate(car.image, car.angle)
     car_mask = pygame.mask.from_surface(rotated_image)
-
-    scrn.blit(track_image, (0, 0))
 
     rect = rotated_image.get_rect(center=(car.x, car.y))
     offset = (rect.left - 0, rect.top - 0)
@@ -111,9 +110,7 @@ def checkpoint(scrn, car):
         car.score = round(car.score + 100 + car.speed * 0.01, 2)
 
 
-def get_distance(car, angle_offset=0, max_distance=200):
-    track_image = pygame.image.load("maps/map1.png").convert()
-    wall_mask = pygame.mask.from_threshold(track_image, (255, 127, 39), (5, 5, 5, 255))
+def get_distance(car, wall_mask, angle_offset=0, max_distance=200):
     angle_rad = math.radians(car.angle + angle_offset)
     dx = math.cos(angle_rad)
     dy = -math.sin(angle_rad)
@@ -123,11 +120,11 @@ def get_distance(car, angle_offset=0, max_distance=200):
         y = int(car.y + dy * distance)
 
         if wall_mask.get_at((x, y)):
-            dist = pygame.Surface((distance, 2), pygame.SRCALPHA)
-            dist.fill((50, 50, 50))
-            rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
-            rect = rotated.get_rect(center=(int(car.x + dx * distance/2), int(car.y + dy * distance/2)))
-            screen.blit(rotated, rect)
+            #dist = pygame.Surface((distance, 2), pygame.SRCALPHA)
+            #dist.fill((50, 50, 50))
+            #rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
+            #rect = rotated.get_rect(center=(int(car.x + dx * distance/2), int(car.y + dy * distance/2)))
+            #screen.blit(rotated, rect)
             return distance
 
     return max_distance
