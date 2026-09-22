@@ -35,6 +35,8 @@ def run():
             car.stop()
         car.move()
 
+        screen.blit(track_image, (0, 0))
+
         if check_collision(wall_mask, car):
             break
 
@@ -43,11 +45,12 @@ def run():
         car.score -= 0.1
 
         get_distance(car, wall_mask, 0)
-        get_distance(car, wall_mask, 45)
-        get_distance(car, wall_mask, -45)
+        get_distance(car, wall_mask, 35)
+        get_distance(car, wall_mask, -35)
+        get_distance(car, wall_mask, 75)
+        get_distance(car, wall_mask, -75)
 
         car.display(screen)
-        screen.blit(track_image, (0, 0))
         pygame.display.flip()
         clock.tick(30)
 
@@ -120,11 +123,11 @@ def get_distance(car, wall_mask, angle_offset=0, max_distance=200):
         y = int(car.y + dy * distance)
 
         if wall_mask.get_at((x, y)):
-            #dist = pygame.Surface((distance, 2), pygame.SRCALPHA)
-            #dist.fill((50, 50, 50))
-            #rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
-            #rect = rotated.get_rect(center=(int(car.x + dx * distance/2), int(car.y + dy * distance/2)))
-            #screen.blit(rotated, rect)
+            dist = pygame.Surface((distance, 2), pygame.SRCALPHA)
+            dist.fill((50, 50, 50))
+            rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
+            rect = rotated.get_rect(center=(int(car.x + dx * distance/2), int(car.y + dy * distance/2)))
+            screen.blit(rotated, rect)
             return distance
 
     return max_distance
