@@ -1,4 +1,5 @@
 import time
+import math
 import pygame
 from movement import Car
 
@@ -18,7 +19,6 @@ def run():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill((50, 50, 50))
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
@@ -37,6 +37,12 @@ def run():
             break
 
         checkpoint(screen, car)
+
+        car.score -= 0.1
+
+        get_distance(car, 0)
+        get_distance(car, 45)
+        get_distance(car, -45)
 
         car.display(screen)
         pygame.display.flip()
@@ -101,9 +107,30 @@ def checkpoint(scrn, car):
     checkpoint_touch = checkpoint_mask.overlap(car_mask, cp_offset)
 
     if checkpoint_touch is not None:
-        print("Checkpoint!")
         car.next_checkpoint += 1 if car.next_checkpoint < len(checkpoints)-1 else -len(checkpoints)+1
+        car.score = round(car.score + 100 + car.speed * 0.01, 2)
 
+
+def get_distance(car, angle_offset=0, max_distance=200):
+    track_image = pygame.image.load("maps/map1.png").convert()
+    wall_mask = pygame.mask.from_threshold(track_image, (255, 127, 39), (5, 5, 5, 255))
+    angle_rad = math.radians(car.angle + angle_offset)
+    dx = math.cos(angle_rad)
+    dy = -math.sin(angle_rad)
+
+    for distance in range(0, max_distance, 4):
+        x = int(car.x + dx * distance)
+        y = int(car.y + dy * distance)
+
+        if wall_mask.get_at((x, y)):
+            dist = pygame.Surface((distance, 2), pygame.SRCALPHA)
+            dist.fill((50, 50, 50))
+            rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
+            rect = rotated.get_rect(center=(int(car.x + dx * distance/2), int(car.y + dy * distance/2)))
+            screen.blit(rotated, rect)
+            return distance
+
+    return max_distance
 
 if __name__ == "__main__":
     run()

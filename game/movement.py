@@ -15,6 +15,7 @@ class Car:
         self.L = 30
         self.steering = 0
         self.next_checkpoint = 0
+        self.score = 0
         self.image = self.draw()
 
 
