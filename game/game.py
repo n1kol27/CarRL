@@ -110,7 +110,7 @@ def checkpoint(scrn, car):
 
     if checkpoint_touch is not None:
         car.next_checkpoint += 1 if car.next_checkpoint < len(checkpoints)-1 else -len(checkpoints)+1
-        car.score = round(car.score + 100 + car.speed * 0.01, 2)
+        car.score = round(car.score + 20 + car.speed * 0.01, 2)
 
 
 def get_distance(car, wall_mask, angle_offset=0, max_distance=200):
@@ -123,11 +123,11 @@ def get_distance(car, wall_mask, angle_offset=0, max_distance=200):
         y = int(car.y + dy * distance)
 
         if wall_mask.get_at((x, y)):
-            dist = pygame.Surface((distance, 2), pygame.SRCALPHA)
-            dist.fill((50, 50, 50))
-            rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
-            rect = rotated.get_rect(center=(int(car.x + dx * distance/2), int(car.y + dy * distance/2)))
-            screen.blit(rotated, rect)
+            #dist = pygame.Surface((distance, 2), pygame.SRCALPHA)
+            #dist.fill((50, 50, 50))
+            #rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
+            #rect = rotated.get_rect(center=(int(car.x + dx * distance/2), int(car.y + dy * distance/2)))
+            #screen.blit(rotated, rect)
             return distance
 
     return max_distance
