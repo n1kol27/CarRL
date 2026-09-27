@@ -1,7 +1,15 @@
+import torch
 import torch.optim as optim
-from model import *
+from game.game import run_train
+from model import SpeedModel, ReplayBuffer
 
 
-network = SpeedModel(7, 9)
+network = SpeedModel(7, 7)
+network.load_state_dict(torch.load("models/model.pth"))
 optimizer = optim.Adam(network.parameters(), lr=0.001)
+replay_buffer = ReplayBuffer(capacity=10000)
 
+
+run_train(network, optimizer, replay_buffer, 7)
+
+torch.save(network.state_dict(), "models/model.pth")

@@ -8,11 +8,12 @@ gamma = 0.99
 
 
 class SpeedModel(nn.Module):
-    def __init__(self, input_dim=7, output_dim=9):
+    def __init__(self, input_dim=7, output_dim=7):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, output_dim)
+        self.relu = nn.ReLU()
 
     def forward(self, x):
         x = self.relu(self.fc1(x))

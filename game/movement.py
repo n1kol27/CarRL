@@ -7,7 +7,7 @@ speed_limit = 30
 
 
 class Car:
-    def __init__(self, x, y):
+    def __init__(self, x, y, color):
         self.x = x
         self.y = y
         self.angle = 0
@@ -16,7 +16,7 @@ class Car:
         self.steering = 0
         self.next_checkpoint = 0
         self.score = 0
-        self.image = self.draw()
+        self.image = self.draw(color)
 
 
     def forward(self):
@@ -70,10 +70,20 @@ class Car:
         screen.blit(rotated, rect)
 
 
+    def reset(self, x, y):
+        self.x = x
+        self.y = y
+        self.angle = 0
+        self.speed = 0
+        self.steering = 0
+        self.next_checkpoint = 0
+        self.score = 0
+
+
     @staticmethod
-    def draw():
+    def draw(color):
         car_image = pygame.Surface((40, 20), pygame.SRCALPHA)
-        car_image.fill((200, 50, 50))
+        car_image.fill(color)
         pygame.draw.rect(car_image, (100, 180, 220), (25, 3, 10, 14))
         pygame.draw.rect(car_image, (100, 25, 25), (0, 0, 6, 20))
         pygame.draw.rect(car_image, (200, 200, 100), (37, 2, 3, 5))
