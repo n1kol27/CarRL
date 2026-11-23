@@ -90,3 +90,22 @@ class Car:
         pygame.draw.rect(car_image, (200, 200, 100), (37, 13, 3, 5))
         return car_image
 
+
+class Checkpoint:
+    def __init__(self, x, y, length=200):
+        self.x = x
+        self.y = y
+        self.length = length
+        self.angle = 0
+        self.center = (self.x + self.length / 2 if not self.angle else self.x + 5, self.y + self.length / 2 if self.angle else self.y + 5)
+
+        if self.angle == 0:
+            self.surface = pygame.Surface((10, self.length), pygame.SRCALPHA)
+        else:
+            self.surface = pygame.Surface((self.length, 10), pygame.SRCALPHA)
+
+        self.surface.fill((80, 80, 80))
+
+
+    def place(self, screen):
+        screen.blit(self.surface, (self.x, self.y))

@@ -14,7 +14,7 @@ clock = pygame.time.Clock()
 
 def run():
     running = True
-    car = Car(200, 100)
+    car = Car(200, 100, random_color())
     track_image = pygame.image.load("game/maps/map1.png").convert()
     wall_mask = pygame.mask.from_threshold(track_image, (255, 127, 39), (5, 5, 5, 255))
 
@@ -41,15 +41,13 @@ def run():
         if check_collision(wall_mask, car):
             break
 
-        checkpoint(screen, car)
+        checkpoints, checkpoints_placement = create_checkpoint(screen)
+        checkpoint(screen, car, checkpoints, checkpoints_placement)
 
         car.score -= 0.1
 
-        get_distance(car, wall_mask, 0)
-        get_distance(car, wall_mask, 35)
-        get_distance(car, wall_mask, -35)
-        get_distance(car, wall_mask, 75)
-        get_distance(car, wall_mask, -75)
+        get_checkpoint_angle(car, checkpoints_placement[car.next_checkpoint].center)
+        get_distance(car, wall_mask, 0, 500)
 
         car.display(screen)
         pygame.display.flip()
@@ -75,8 +73,6 @@ def run_train(model, optimizer, replay_buffer, car_count):
     track_image = pygame.image.load("game/maps/map1.png").convert()
     wall_mask = pygame.mask.from_threshold(track_image, (255, 127, 39), (5, 5, 5, 255))
 
-    act = 5
-    action = 0
 
     while running:
         for event in pygame.event.get():
@@ -90,23 +86,20 @@ def run_train(model, optimizer, replay_buffer, car_count):
             if len(replay_buffer.buffer) >= 64:
                 train_step(replay_buffer, 64, model, optimizer)
 
-            if act == 5:
-                state = [
-                    get_distance(car, wall_mask, 0),
-                    get_distance(car, wall_mask, 35),
-                    get_distance(car, wall_mask, -35),
-                    get_distance(car, wall_mask, 75),
-                    get_distance(car, wall_mask, -75),
-                    car.speed,
-                    car.steering
-                ]
+            checkpoints, checkpoints_placement = create_checkpoint(screen)
+            checkpoint(screen, car, checkpoints, checkpoints_placement)
 
-                action = choose_action(state, model)
-                act -=1
-            elif act == 0:
-                act = 5
-            else:
-                act -= 1
+            state = [
+                get_distance(car, wall_mask, 0) / 200,
+                get_distance(car, wall_mask, 35) / 200,
+                get_distance(car, wall_mask, -35) / 200,
+                get_distance(car, wall_mask, 75) / 200,
+                get_distance(car, wall_mask, -75) / 200,
+                car.speed / 10,
+                get_checkpoint_angle(car, checkpoints_placement[car.next_checkpoint].center)
+            ]
+
+            action = choose_action(state, model)
 
             if action == 1:
                 car.turn_left()
@@ -144,7 +137,6 @@ def run_train(model, optimizer, replay_buffer, car_count):
                 print(car.score)
                 car.reset(200, 100)
 
-            checkpoint(screen, car)
 
             car.score -= 0.1
             car.score += car.speed
@@ -204,8 +196,7 @@ def create_checkpoint(scrn):
     return checkpoints, checkpoints_placement
 
 
-def checkpoint(scrn, car):
-    checkpoints, checkpoints_placement = create_checkpoint(scrn)
+def checkpoint(scrn, car, checkpoints, checkpoints_placement):
     checkpoint_mask = pygame.mask.from_surface(checkpoints[car.next_checkpoint])
     rotated_image = pygame.transform.rotate(car.image, car.angle)
     car_mask = pygame.mask.from_surface(rotated_image)
@@ -224,23 +215,37 @@ def get_distance(car, wall_mask, angle_offset=0, max_distance=200):
     dx = math.cos(angle_rad)
     dy = -math.sin(angle_rad)
 
+
+    def draw_distance_line(_distance):
+        dist = pygame.Surface((_distance, 2), pygame.SRCALPHA)
+        dist.fill((50, 50, 50))
+        rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
+        rect = rotated.get_rect(center=(int(car.x + dx * _distance/2), int(car.y + dy * _distance/2)))
+        screen.blit(rotated, rect)
+
     for distance in range(0, max_distance, 4):
         x = int(car.x + dx * distance)
         y = int(car.y + dy * distance)
 
         if wall_mask.get_at((x, y)):
-            #dist = pygame.Surface((distance, 2), pygame.SRCALPHA)
-            #dist.fill((50, 50, 50))
-            #rotated = pygame.transform.rotate(dist, car.angle + angle_offset)
-            #rect = rotated.get_rect(center=(int(car.x + dx * distance/2), int(car.y + dy * distance/2)))
-            #screen.blit(rotated, rect)
+            draw_distance_line(distance)
             return distance
 
     return max_distance
 
 
+def get_checkpoint_angle(car, checkpoint):
+    x_len = car.x - checkpoint[0]
+    y_len = car.y - checkpoint[1]
+    angle = math.degrees(math.atan(y_len/x_len))
+    #print(angle - car.angle)
+    print(car.angle)
+    #надо найти угол между прямой направления машины и прямой от центра машины до центра чекпоинта
+
+
+
 def random_color():
-    return (random.randint(0, 225), random.randint(0, 225), random.randint(0, 225))
+    return random.randint(0, 225), random.randint(0, 225), random.randint(0, 225)
 
 
 if __name__ == "__main__":
